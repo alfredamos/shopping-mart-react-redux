@@ -1,39 +1,24 @@
-import { Reducer, useEffect, useReducer } from "react";
-import { OrderState } from "../../state/order.state";
-import { orderReducer } from "../../reducers/order.reducer";
+/* eslint-disable react-hooks/exhaustive-deps */
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { orderService } from "../../services/order.service";
 import OrderDto from "../../models/orders/order.model";
 import OrderForm from "../../components/forms/orders/OrderForm";
-import { UserAction } from "../../actions/user.action";
-import { userActions } from "../../action-constants/user.constant";
 import { userService } from "../../services/user.service";
-import { userReducer } from "../../reducers/user.reducer";
-import { UserState } from "../../state/user.state";
-import { orderActions } from "../../action-constants/order.constant";
-import { OrderAction } from "../../actions/order.action";
+import { useDispatch, useSelector } from "react-redux";
+import { getAllUsers, getUserState, userError } from "../../slices/userSlice";
+import { addOrder, orderError } from "../../slices/orderSlice";
 
 export function CreateOrderPage() {
-  const [stateOrder, dispatchOrder] = useReducer<
-    Reducer<OrderState, OrderAction>
-  >(orderReducer, new OrderState());
-
-  const [usersState, dispatchUsers] = useReducer<
-    Reducer<UserState, UserAction>
-  >(userReducer, new UserState());
+ const dispatch = useDispatch();
+ const {users} = useSelector(getUserState);
 
   const navigate = useNavigate();
 
   useEffect(() => {
     userService.getAllUsers().then((data) => {
-      dispatchUsers(
-        new UserAction(userActions.USER_SUCCESS_USER, data.users!)
-      );
-    });
-  }, []);
-
-  useEffect(() => {
-    dispatchOrder(new OrderAction(orderActions.ORDER_BEGIN, true));
+      dispatch(getAllUsers(data.users!))
+    }).catch(error => dispatch(userError(error.message)));
   }, []);
 
   const orderHandler = (orderDto: OrderDto) => {
@@ -41,18 +26,11 @@ export function CreateOrderPage() {
       .createOrder(orderDto)
       .then(({ data }) => {
         console.log("order-in-order-edit : ", data);
-        dispatchOrder(
-          new OrderAction(
-            orderActions.ORDER_SUCCESS_ORDER,
-            data
-          )
-        );
+        dispatch(addOrder(data));
         navigate("/orders");
       })
       .catch((error) => {
-        dispatchOrder(
-          new OrderAction(orderActions.ORDER_FAILURE, error)
-        );
+        dispatch(orderError(error.message))
       });
   };
 
@@ -62,8 +40,8 @@ export function CreateOrderPage() {
 
   return (
     <OrderForm
-      users={usersState.users!}
-      initialValue={stateOrder.order}
+      users={users!}
+      initialValue={new OrderDto()}
       onOrderHandler={orderHandler}
       onBackToList={backToListHandler}
     />

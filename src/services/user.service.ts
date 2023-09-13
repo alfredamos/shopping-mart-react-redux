@@ -3,7 +3,6 @@ import { BehaviorSubject } from "rxjs";
 import { UserDto } from "../models/auth/user.model";
 import { UserApiResults } from "../models/users/user-results.model";
 import { SignupDto } from "../models/auth/signup.model";
-//import { AuthApiResponse } from "../models/auth/api-response.model";
 
 export class UserService {
   private usersSubject = new BehaviorSubject<UserDto[]>([]);

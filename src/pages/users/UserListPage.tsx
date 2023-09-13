@@ -1,36 +1,29 @@
-import { Reducer, useReducer, useEffect } from "react";
-import { UserState } from "../../state/user.state";
-import { UserAction } from "../../actions/user.action";
-import { userReducer } from "../../reducers/user.reducer";
+/* eslint-disable react-hooks/exhaustive-deps */
+import { useEffect } from "react";
 import { Outlet } from "react-router-dom";
-import { userActions } from "../../action-constants/user.constant";
 import { UserDto } from "../../models/auth/user.model";
 import { userService } from "../../services/user.service";
 import UsersTable from "../../components/displays/users/UsersTable";
+import { useDispatch, useSelector } from "react-redux";
+import { getAllUsers, getUserState, userError } from "../../slices/userSlice";
 
 export function UserListPage() {
-  const [state, dispatch] = useReducer<Reducer<UserState, UserAction>>(
-    userReducer,
-    new UserState()
-  );
-
-  useEffect(() => {
-    dispatch(new UserAction(userActions.USER_BEGIN, true));
-  }, []);
+ const dispatch = useDispatch();
+ const {users} = useSelector(getUserState);
 
   useEffect(() => {
     const users = JSON.parse(localStorage.getItem("users")!) as UserDto[];
     if (users && users.length > 0) {
-      dispatch(new UserAction(userActions.USER_SUCCESS_USERS, users));
+      dispatch(getAllUsers(users));
     } else {
       userService
         .getAllUsers()
         .then((data) => {
           userService.updateUsers$(data.users!);
-          dispatch(new UserAction(userActions.USER_SUCCESS_USERS, data.users!));
+          dispatch(getAllUsers(data.users!));
         })
         .catch((error) => {
-          dispatch(new UserAction(userActions.USER_FAILURE, error));
+          dispatch(userError(error.message));
         });
     }
   }, []);
@@ -39,7 +32,7 @@ export function UserListPage() {
     <div className="container">
       <div className="row">
         <div className="col-sm-6 mt-5">
-          <UsersTable users={state.users!} />
+          <UsersTable users={users!} />
         </div>
         <div className="col-sm-6">
           <Outlet />

@@ -13,7 +13,7 @@ export function LogoutPage() {
   console.log("I'm in logout");
 
   const logout = (value: boolean) => {
-    if (value) {
+    if (value) {      
       dispatch(authUserSuccess(userSubInitial));
       authService.logout(userSubInitial);
       setModal(false);

@@ -1,59 +1,34 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useReducer, Reducer, useEffect } from "react";
-import { ProductState } from "../../state/product.state";
-import { ProductAction } from "../../actions/product.action";
-import { productReducer } from "../../reducers/product.reducer";
-import { productActions } from "../../action-constants/product.constant";
+import { useEffect } from "react";
 import { productService } from "../../services/product.service";
 import ProductDisplay from "../../components/displays/products/ProductDisplay";
 import { Link, useNavigate } from "react-router-dom";
 import { ProductDto } from "../../models/products/product.model";
-//import { useObservable } from "../../hooks/useObservable";
-//import { authService } from "../../services/auth.service";
-//import { AuthApiResponse } from '../../models/auth/api-response.model';
 import { Role } from "../../models/auth/user-type.model";
 import { useDispatch, useSelector } from "react-redux";
-import { authUserSuccess, getAuthState } from "../../slices/authSlice";
-import { AuthApiResponse } from "../../models/auth/api-response.model";
+import { getAllProducts, getProductState } from "../../slices/productSlice";
+import { getAuthState } from "../../slices/authSlice";
 
 export function ProductListPage() {
-  const [{ products }, dispatch] = useReducer<
-    Reducer<ProductState, ProductAction>
-  >(productReducer, new ProductState());
-
-  const authDispatch = useDispatch()
+  const dispatch = useDispatch();
+  const { products } = useSelector(getProductState);
 
   const navigate = useNavigate();
 
-  const {role} = useSelector(getAuthState);
-  //const authUser = useObservable(authService.authUser$, new AuthApiResponse());
-  //const isAdmin = authUser.role === Role.Admin;
+  const { role } = useSelector(getAuthState);
   const isAdmin = role === Role.Admin;
-
-  useEffect(() => {
-    dispatch(new ProductAction(productActions.PRODUCT_BEGIN, true));
-  }, []);
 
   useEffect(function () {
     const products = JSON.parse(
       localStorage.getItem("products")!
     ) as ProductDto[];
 
-    const authApiRes: AuthApiResponse = JSON.parse(localStorage.getItem("authApiRes")!);
-
     if (products && products.length) {
       console.log("In useEffect at point 1, products : ", products);
-      /* dispatch(
-        new ProductAction(productActions.PRODUCT_SUCCESS_PRODUCTS, products!)
-      ); */
-      console.log("In productList, authApiRes : ", authApiRes);
-      
-      authDispatch(authUserSuccess(authApiRes))
+      dispatch(getAllProducts(products));
     } else {
       productService.getAllProducts().then((products) => {
-        dispatch(
-          new ProductAction(productActions.PRODUCT_SUCCESS_PRODUCTS, products!)
-        );
+        dispatch(getAllProducts(products));
       });
     }
   }, []);

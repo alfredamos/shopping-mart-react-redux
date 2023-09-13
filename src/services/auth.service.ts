@@ -47,10 +47,12 @@ class AuthService {
 
   async changeUserRole(changeUserRoleDto: UserRoleDto) {
     console.log("admin-user, user : ", changeUserRoleDto);
-    return await Axios.patch<AuthApiResponse>(
+    const {data} = await Axios.patch<AuthApiResponse>(
       `${this.url}/change-role`,
       changeUserRoleDto
     );
+
+    return data;
   }
 
   getLocalAuthUser(): AuthApiResponse {
@@ -76,6 +78,7 @@ class AuthService {
   logout(value: AuthApiResponse) {
     this.setAuthUser(value);
     localStorage.removeItem("products");
+    localStorage.removeItem("userInfo");
   }
 
   removeAuthUser() {

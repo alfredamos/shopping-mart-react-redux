@@ -7,13 +7,12 @@ import CartItemForm from "../../components/forms/cartItems/CartItemForm";
 import { productService } from "../../services/product.service";
 import { useDispatch, useSelector } from 'react-redux';
 import { getAllProducts, getProductState, productError } from '../../slices/productSlice';
-import { addCartItem, cartItemError, getCartItemState } from "../../slices/cartItemSlice";
+import { addCartItem, cartItemError } from "../../slices/cartItemSlice";
 
 export function CreateCartItemPage() {
   const dispatch = useDispatch();
 
   const navigate = useNavigate();
-  const {cartItem} = useSelector(getCartItemState);
   const {products } = useSelector(getProductState)  
 
   useEffect(() => {
@@ -43,7 +42,7 @@ export function CreateCartItemPage() {
   return (
     <CartItemForm
       products={products}
-      initialValue={cartItem}
+      initialValue={new CartItemDto()}
       onCartItemHandler={cartItemHandler}
       onBackToList={backToListHandler}
     />

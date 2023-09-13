@@ -9,7 +9,7 @@ export const initialAuthState: AuthState = {
   isLoggedIn: false,  
 };
 
-type Payload = boolean | string | AuthApiResponse;
+type Payload = AuthApiResponse | string;
 
 export class AuthAction {
   constructor(public type: string, public payload: Payload) {}

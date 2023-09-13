@@ -1,6 +1,6 @@
 import CartItemDto from "../models/cartItems/cartItem.model";
 
-type Payload = boolean | string | CartItemDto[] | CartItemDto;
+type Payload = CartItemDto[] | CartItemDto | string;
 
 export class CartItemAction {
   constructor(public type: string, public payload: Payload) {}

@@ -1,33 +1,26 @@
-import { Reducer, useReducer, useEffect } from "react";
-import { UserState } from "../../state/user.state";
-import { UserAction } from "../../actions/user.action";
-import { userReducer } from "../../reducers/user.reducer";
-import { userActions } from "../../action-constants/user.constant";
+/* eslint-disable react-hooks/exhaustive-deps */
+import { useEffect } from "react";
 import { userService } from "../../services/user.service";
 import { useNavigate, useParams } from "react-router-dom";
 import UserDisplayOne from "../../components/displays/users/UserDisplayOne";
+import { useDispatch, useSelector } from "react-redux";
+import { deleteUser, getUserById, getUserState, userError } from "../../slices/userSlice";
 
 export function UserDetailPage() {
-  const [userState, userDispatch] = useReducer<Reducer<UserState, UserAction>>(
-    userReducer,
-    new UserState()
-  );
+  const dispatch = useDispatch();
+  const {user} = useSelector(getUserState);
 
   const { id } = useParams();
   const navigate = useNavigate();
 
   useEffect(() => {
-    userDispatch(new UserAction(userActions.USER_BEGIN, true));
-  }, []);
-
-  useEffect(() => {
     userService
       .getUserById(id!)
       .then((data) => {
-        userDispatch(new UserAction(userActions.USER_SUCCESS_USER, data.user!));
+        dispatch(getUserById(data.user!));
       })
       .catch((error) => {
-        userDispatch(new UserAction(userActions.USER_FAILURE, error));
+        dispatch(userError(error.message));
       });
   }, [id]);
 
@@ -39,10 +32,11 @@ export function UserDetailPage() {
     if (value) {
       userService
         .deleteUser(id!)
-        .then(() => {
+        .then(({data}) => {
+          dispatch(deleteUser(data.user!))
           navigate("/users");
         })
-        .catch((error) => console.log(error));
+        .catch((error) => dispatch(userError(error.message)));
     } else {
       navigate(-1);
     }
@@ -50,7 +44,7 @@ export function UserDetailPage() {
   return (
     <UserDisplayOne
       deleteHandler={userDeleteHandler}
-      user={userState.user!}
+      user={user!}
       onBackToList={backToListHandler}
     />
   );

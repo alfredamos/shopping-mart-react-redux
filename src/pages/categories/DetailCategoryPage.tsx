@@ -35,7 +35,7 @@ export function DetailCategoryPage() {
         .then(() => {
           navigate("/categories");
         })
-        .catch((error) => console.log(error));
+        .catch((error) => dispatch(categoryError(error.message)));
     } else {
       navigate(-1);
     }

@@ -3,9 +3,19 @@ import { UserAction } from "../actions/user.action";
 import { UserDto } from "../models/auth/user.model";
 import { AppState } from "../state/app.state";
 import { UserState } from "../state/user.state";
+import { Gender } from "../models/auth/gender.model";
+//import { UserRoleDto } from "../models/auth/user-role.model";
+
+const initialUser: UserDto = {
+  name: "",
+  email: "",
+  phone: "",
+  password: "",
+  gender: Gender.Male,
+};
 
 const initialState: UserState = {
-  user: new UserDto(),
+  user: initialUser,
   users: [],
   errorMessage: "",
   isLoading: false,
@@ -35,22 +45,22 @@ const userSlice = createSlice({
     },
     getUserById(state: UserState, action: UserAction) {
       const payload = action.payload as UserDto;
-      state.user = state.users?.find(
-        (user) => user.id === payload.id
-      );
+      state.user = payload;
       state.isLoading = false;
       state.errorMessage = "";
     },
     updateUser(state: UserState, action: UserAction) {
-      const payload = action.payload as UserDto;      
-      state.users?.map(user => user.id === payload.id ? payload : user);
+      const payload = action.payload as UserDto;
+      state.users?.map((user) => (user.id === payload.id ? payload : user));
       state.isLoading = false;
       state.errorMessage = "";
     },
+    userChangeRole(state: UserState, action: UserAction) {      
+      userSlice.caseReducers.updateUser(state, action)
+    }, 
     userError(state: UserState, action: UserAction) {
-      const payload = action.payload as string;
       state.isLoading = false;
-      state.errorMessage = payload;
+      state.errorMessage = action.payload as string;
     },
   },
 });
@@ -62,6 +72,7 @@ export const {
   getAllUsers,
   getUserById,
   updateUser,
+  userChangeRole
 } = userSlice.actions;
 
 export default userSlice.reducer;

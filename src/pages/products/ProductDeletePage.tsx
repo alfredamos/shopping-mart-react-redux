@@ -1,23 +1,17 @@
-import { useReducer, Reducer, useEffect } from "react";
+/* eslint-disable react-hooks/exhaustive-deps */
+import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { productActions } from "../../action-constants/product.constant";
-import { ProductAction } from "../../actions/product.action";
 import { ProductDisplayOne } from "../../components/displays/products/ProductDisplayOne";
-import { productReducer } from "../../reducers/product.reducer";
 import { productService } from "../../services/product.service";
-import { ProductState } from "../../state/product.state";
+import { useDispatch, useSelector } from "react-redux";
+import { deleteProduct, getProductById, getProductState, productError } from "../../slices/productSlice";
 
-export function ProductDeletePage() {
-  const [productState, productDispatch] = useReducer<
-    Reducer<ProductState, ProductAction>
-  >(productReducer, new ProductState());
+export function ProductDeletePage() {  
+  const dispatch = useDispatch();
+  const {product} = useSelector(getProductState);
 
   const navigate = useNavigate();
   const { id } = useParams();
-
-  useEffect(() => {
-    productDispatch(new ProductAction(productActions.PRODUCT_BEGIN, true));
-  }, []);
 
   useEffect(() => {
     productService
@@ -25,37 +19,23 @@ export function ProductDeletePage() {
       .then((data) => {
         console.log("data: ", data);
 
-        productDispatch(
-          new ProductAction(
-            productActions.PRODUCT_SUCCESS_PRODUCT,
-            data.product!
-          )
-        );
+       dispatch(getProductById(data));
       })
       .catch((error) => {
-        productDispatch(
-          new ProductAction(productActions.PRODUCT_FAILURE, error)
-        );
+        dispatch(productError(error.message));
       });
-  }, [id, navigate]);
+  }, [id]);
 
   const deleteProductHandler = (value: boolean) => {
     if (value) {
       productService
         .deleteProduct(id!)
         .then(({ data }) => {
-          productDispatch(
-            new ProductAction(
-              productActions.PRODUCT_SUCCESS_PRODUCT,
-              data.product!
-            )
-          );
+         dispatch(deleteProduct(data))
           navigate("/list-product");
         })
         .catch((error) => {
-          productDispatch(
-            new ProductAction(productActions.PRODUCT_FAILURE, error)
-          );
+          dispatch(productError(error.message));
         });
     } else {
       navigate("/list-product");
@@ -72,7 +52,7 @@ export function ProductDeletePage() {
         <ProductDisplayOne
           deleteHandler={deleteProductHandler}
           onBackToList={backToListHandler}
-          product={productState.product!}
+          product={product}
         />
       </div>
     </div>

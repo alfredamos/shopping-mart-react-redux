@@ -27,13 +27,7 @@ export default function DisplayProduct({ product }: Props) {
           className="btn btn-outline-secondary m-1 btn-sm fw-bold"
         >
           Edit
-        </Link>
-        <Link
-          to={`/list-product/feature/${product?.id}`}
-          className="btn btn-outline-dark m-1 btn-sm fw-bold"
-        >
-          Feature
-        </Link>
+        </Link>        
       </td>
     </>
   );

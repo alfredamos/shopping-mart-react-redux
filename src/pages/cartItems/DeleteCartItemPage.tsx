@@ -39,7 +39,7 @@ export function DeleteCartItemPage() {
           dispatch(deleteCartItem(id!))
           navigate("/cartItems");
         })
-        .catch((error) => console.log(error));
+        .catch((error) => dispatch(cartItemError(error.message)));
     } else {
       navigate(-1);
     }

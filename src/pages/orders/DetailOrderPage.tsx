@@ -1,50 +1,41 @@
-import { useReducer, Reducer, useEffect } from "react";
-import { OrderState } from "../../state/order.state";
-import { OrderAction } from "../../actions/order.action";
-import { orderReducer } from "../../reducers/order.reducer";
-import { orderActions } from "../../action-constants/order.constant";
+/* eslint-disable react-hooks/exhaustive-deps */
+import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { orderService } from "../../services/order.service";
 import OrderDisplayOne from "../../components/displays/orders/OrderDisplayOne";
+import { useDispatch, useSelector } from "react-redux";
+import { getOrderState, getOrderById, orderError, deleteOrder } from "../../slices/orderSlice";
 
 export function DetailOrderPage() {
-  const [orderState, orderDispatch] = useReducer<
-    Reducer<OrderState, OrderAction>
-  >(orderReducer, new OrderState());
+  const dispatch = useDispatch();
+  const { order } = useSelector(getOrderState);
 
   const navigate = useNavigate();
   const { id } = useParams();
 
   useEffect(() => {
-    orderDispatch(new OrderAction(orderActions.ORDER_BEGIN, true));
-  }, []);
-
-  useEffect(() => {
     orderService
       .getOrderById(id!)
       .then((data) => {
+        console.log("data: ", data);
 
-        orderDispatch(
-          new OrderAction(orderActions.ORDER_SUCCESS_ORDER, data)
-        );
+        dispatch(getOrderById(data));
       })
       .catch((error) => {
-        orderDispatch(new OrderAction(orderActions.ORDER_FAILURE, error));
+        dispatch(orderError(error.message));
       });
-  }, [id, navigate]);
+  }, [id]);
 
   const deleteOrderHandler = (value: boolean) => {
     if (value) {
       orderService
         .deleteOrder(id!)
         .then((data) => {
-          orderDispatch(
-            new OrderAction(orderActions.ORDER_SUCCESS_ORDER, data)
-          );
+          dispatch(deleteOrder(data));
           navigate("/orders");
         })
         .catch((error) => {
-          orderDispatch(new OrderAction(orderActions.ORDER_FAILURE, error));
+          dispatch(orderError(error.message));
         });
     } else {
       navigate("/orders");
@@ -61,7 +52,7 @@ export function DetailOrderPage() {
         <OrderDisplayOne
           deleteHandler={deleteOrderHandler}
           onBackToList={backToListHandler}
-          order={orderState.order!}
+          order={order}
         />
       </div>
     </div>

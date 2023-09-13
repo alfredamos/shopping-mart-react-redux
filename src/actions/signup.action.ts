@@ -8,7 +8,7 @@ export const initialSignupData: AuthState = {
   errorMessage: "",
 };
 
-type Payload = boolean | string | AuthApiResponse;
+type Payload = AuthApiResponse | string;
 
 export class SignupAction {
   constructor(public type: string, public payload: Payload) {}

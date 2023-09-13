@@ -3,7 +3,7 @@ import { ProductDto } from "../models/products/product.model";
 
 export const initialProductListState = new ProductState();
 
-type Payload = boolean | string | ProductDto[] | ProductDto;
+type Payload = ProductDto[] | ProductDto | string;
 
 export class ProductAction {
   constructor(public type: string, public payload: Payload) {}

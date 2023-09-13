@@ -2,11 +2,11 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { ProductDto } from "../../../models/products/product.model";
-import { UserDto } from "../../../models/auth/user.model";
+import CategoryDto from "../../../models/categories/category.model";
 
 interface Props {
   initialValue: ProductDto;
-  users: UserDto[];
+  categories: CategoryDto[];
   onProductHandler: (productDto: ProductDto) => void;
   onBackToList: () => void;
 }
@@ -14,16 +14,16 @@ interface Props {
 const schema = yup.object().shape({
   id: yup.string().optional(),
   name: yup.string().required("Name is required!"),
-  company: yup.string().required("Company is required!"),
+  brand: yup.string().required("Brand is required!"),
   description: yup.string().optional(),
   productImage: yup.string().optional(),
-  featured: yup.boolean().optional(),
-  userId: yup.string().optional(),
+  categoryId: yup.string().optional(),
   price: yup.number().required("Price is required!"),
+  quantity: yup.number().required("Quantity is required!"),
   rating: yup.number().optional(),
 });
 
-const ProductForm = ({ onProductHandler, onBackToList, initialValue, users }: Props) => {
+const ProductForm = ({ onProductHandler, onBackToList, initialValue, categories }: Props) => {
   const {
     handleSubmit,
     register,
@@ -62,16 +62,16 @@ const ProductForm = ({ onProductHandler, onBackToList, initialValue, users }: Pr
                 </p>
               </div>
               <div className="mb-3">
-                <label htmlFor="company" className="form-label">
-                  Company
+                <label htmlFor="brand" className="form-label">
+                  Brand
                 </label>
                 <input
-                  {...register("company")}
+                  {...register("brand")}
                   type="text"
                   className="form-control"
                 />
                 <p className="has-validation text-danger">
-                  {errors.company?.message}
+                  {errors.brand?.message}
                 </p>
               </div>
               <div className="mb-3">
@@ -82,16 +82,16 @@ const ProductForm = ({ onProductHandler, onBackToList, initialValue, users }: Pr
                   {...register("productImage")}
                   type="text"
                   className="form-control"
-                />                
+                />
               </div>
               <div className="mb-3">
                 <label htmlFor="description" className="form-label">
                   Description
                 </label>
                 <textarea
-                  {...register("description")}                  
+                  {...register("description")}
                   className="form-control"
-                />               
+                />
               </div>
               <div className="mb-3">
                 <label htmlFor="price" className="form-label">
@@ -107,15 +107,34 @@ const ProductForm = ({ onProductHandler, onBackToList, initialValue, users }: Pr
                 </p>
               </div>
               <div className="mb-3">
-                <label htmlFor="userId" className="form-label">
-                  User
+                <label htmlFor="quantity" className="form-label">
+                  Quantity
                 </label>
-                <select {...register("userId")} className="form-select">
-                  <option>Please select the user</option>
-                  {users.map((user) => (
-                    <option id={user.id} value={user.id} key={user.id}>{user.name}</option>
+                <input
+                  {...register("quantity")}
+                  type="number"
+                  className="form-control"
+                />
+                <p className="has-validation text-danger">
+                  {errors.quantity?.message}
+                </p>
+              </div>
+              <div className="mb-3">
+                <label htmlFor="categoryId" className="form-label">
+                  Category
+                </label>
+                <select {...register("categoryId")} className="form-select">
+                  <option>Please select the category</option>
+                  {categories.map((category) => (
+                    <option
+                      id={category.id}
+                      value={category.id}
+                      key={category.id}
+                    >
+                      {category.name}
+                    </option>
                   ))}
-                </select>                
+                </select>
               </div>
             </div>
             <div className="card-footer">

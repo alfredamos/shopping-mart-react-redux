@@ -1,5 +1,5 @@
 export class ProductDto {
-  id: string = "";
+  id?: string = "";
   name: string = "";
   price: number = 0;
   rating?: number = 0;

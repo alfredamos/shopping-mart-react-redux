@@ -1,65 +1,43 @@
-import { Reducer, useEffect, useReducer } from "react";
-import { ProductAction } from "../../actions/product.action";
-import { ProductState } from "../../state/product.state";
-import { productReducer } from "../../reducers/product.reducer";
+/* eslint-disable react-hooks/exhaustive-deps */
+import { useEffect } from "react";
 import ProductForm from "../../components/forms/products/ProductForm";
 import { ProductDto } from "../../models/products/product.model";
 import { useNavigate } from "react-router-dom";
-import { UserAction } from "../../actions/user.action";
-import { UserState } from "../../state/user.state";
-import { userReducer } from "../../reducers/user.reducer";
-import { userActions } from "../../action-constants/user.constant";
-import { userService } from "../../services/user.service";
-import { productActions } from "../../action-constants/product.constant";
 import { productService } from "../../services/product.service";
+import { useDispatch, useSelector } from "react-redux";
+import { addProduct, productError } from "../../slices/productSlice";
+import { categoryService } from "../../services/category.service";
+import { categoryError, getAllCategories, getCategoryState } from "../../slices/categorySlice";
 
-export function ProductCreatePage() {
-  const [, productDispatch] = useReducer<Reducer<ProductState, ProductAction>>(
-    productReducer,
-    new ProductState()
-  );
-  const [usersState, usersDispatch] = useReducer<
-    Reducer<UserState, UserAction>
-  >(userReducer, new UserState());
+export function ProductCreatePage() {  
+  const dispatch = useDispatch();
+  const {categories} = useSelector(getCategoryState)
 
   const navigate = useNavigate();
 
   useEffect(() => {
-    usersDispatch(new UserAction(userActions.USER_BEGIN, true));
-  }, []);
-
-  useEffect(() => {
-    userService
-      .getAllUsers()
+    categoryService
+      .getAllCategories()
       .then((data) => {
-        usersDispatch(
-          new UserAction(userActions.USER_SUCCESS_USERS, data.users!)
-        );
+        dispatch(getAllCategories(data));
       })
       .catch((error) => {
-        usersDispatch(new UserAction(userActions.USER_FAILURE, error));
+        dispatch(categoryError(error.message));
       });
   }, []);
 
   const productSubmitHandler = (productDto: ProductDto) => {
-    productDispatch(new ProductAction(productActions.PRODUCT_BEGIN, true));
+    delete productDto.id; 
     productService
       .createProduct(productDto)
       .then((data) => {
         console.log("new User : ", data);
 
-        productDispatch(
-          new ProductAction(
-            productActions.PRODUCT_SUCCESS_PRODUCT,
-            data
-          )
-        );
+        dispatch(addProduct(data));
         navigate("/list-product");
       })
       .catch((error) => {
-        productDispatch(
-          new ProductAction(productActions.PRODUCT_FAILURE, error)
-        );
+        dispatch(productError(error.message));
       });
   };
 
@@ -70,7 +48,7 @@ export function ProductCreatePage() {
   return (
     <ProductForm
       initialValue={new ProductDto()}
-      users={usersState.users!}
+      categories={categories}
       onBackToList={backToList}
       onProductHandler={productSubmitHandler}
     />

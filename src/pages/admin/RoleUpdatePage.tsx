@@ -1,19 +1,16 @@
-import { useReducer, Reducer, useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { userActions } from "../../action-constants/user.constant";
-import { UserAction } from "../../actions/user.action";
 import { UserRoleDto } from "../../models/auth/user-role.model";
-import { userReducer } from "../../reducers/user.reducer";
-import { UserState } from "../../state/user.state";
 import { userService } from "../../services/user.service";
 import UserRoleForm from "../../components/forms/auth/UserRoleForm";
 import { authService } from "../../services/auth.service";
+import { useDispatch } from "react-redux";
+import { getUserById, userError } from "../../slices/userSlice";
+import { authUserSuccess } from "../../slices/authSlice";
 
 export function RoleUpdatePage() {
-  const [, dispatch] = useReducer<Reducer<UserState, UserAction>>(
-    userReducer,
-    new UserState()
-  );
+  const dispatch = useDispatch();
+  //const {user} = useSelector(getUserState);
 
   const [userRoleUpdate, setUserRoleUpdate] = useState(new UserRoleDto());
 
@@ -21,25 +18,21 @@ export function RoleUpdatePage() {
   const { id } = useParams();
 
   useEffect(() => {
-    dispatch(new UserAction(userActions.USER_BEGIN, true));
-  }, []);
-
-  useEffect(() => {
     userService
       .getUserById(id!)
       .then((data) => {
         console.log("userRoleUpdate-in-userRoleUpdate-detail : ", userRoleUpdate);
-        setUserRoleUpdate((prev) => ({ ...prev, 
+        setUserRoleUpdate((prev: UserRoleDto) => ({ ...prev, 
           name: data.user?.name,
           email: data.user?.email,
           phone: data.user?.phone,
           gender: data.user?.gender,
           role: data.user?.role,
-         }) as UserRoleDto);
-        dispatch(new UserAction(userActions.USER_SUCCESS_USER, data.user!));
+         }) as UserRoleDto); 
+        dispatch(getUserById(data.user!));
       })
       .catch((error) => {
-        dispatch(new UserAction(userActions.USER_FAILURE, error));
+        dispatch(userError(error.message));
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
@@ -47,13 +40,12 @@ export function RoleUpdatePage() {
   function userRoleUpdateHandler(userDto: UserRoleDto){
     console.log("user-info, user : ", userDto)
     authService.changeUserRole(userDto)
-      .then(({ data }) => {
-        console.log("userRoleUpdate-in-userRoleUpdate-edit : ", data);
-
+      .then((data) => {
+        dispatch(authUserSuccess(data))
         navigate("/users");
       })
       .catch((error) => {
-        dispatch(new UserAction(userActions.USER_FAILURE, error));
+        dispatch(userError(error.message));
       });
   }
 

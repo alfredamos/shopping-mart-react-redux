@@ -6,5 +6,6 @@ export class UserRoleDto {
   email: string = "";
   phone: string = "";
   gender: Gender = Gender.Male;
-  role: Role = Role.Customer
+  role: Role = Role.Customer;
+  password?: string;
 }

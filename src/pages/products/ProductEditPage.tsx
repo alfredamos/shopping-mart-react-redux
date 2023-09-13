@@ -1,70 +1,50 @@
-import { useReducer, Reducer, useEffect } from "react";
+/* eslint-disable react-hooks/exhaustive-deps */
+import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { productActions } from "../../action-constants/product.constant";
-import { userActions } from "../../action-constants/user.constant";
-import { ProductAction } from "../../actions/product.action";
-import { UserAction } from "../../actions/user.action";
 import ProductForm from "../../components/forms/products/ProductForm";
 import { ProductDto } from "../../models/products/product.model";
-import { productReducer } from "../../reducers/product.reducer";
-import { userReducer } from "../../reducers/user.reducer";
 import { productService } from "../../services/product.service";
-import { userService } from "../../services/user.service";
-import { ProductState } from "../../state/product.state";
-import { UserState } from "../../state/user.state";
+import { useDispatch, useSelector } from "react-redux";
+import { categoryError, getAllCategories, getCategoryState} from "../../slices/categorySlice";
+import { getProductById, getProductState, productError, updateProduct } from "../../slices/productSlice";
+import { categoryService } from "../../services/category.service";
 
 export function ProductEditPage() {
-  const [productState, productDispatch] = useReducer<
-    Reducer<ProductState, ProductAction>
-  >(productReducer, new ProductState());
-  const [usersState, usersDispatch] = useReducer<
-    Reducer<UserState, UserAction>
-  >(userReducer, new UserState());
+ const dispatch = useDispatch();
+ const {categories} = useSelector(getCategoryState)
+ const {product} = useSelector(getProductState);
 
   const navigate = useNavigate();
   const { id } = useParams();
 
   useEffect(() => {
-    usersDispatch(new UserAction(userActions.USER_BEGIN, true));
-  }, []);
-
-  useEffect(() => {
-    userService
-      .getAllUsers()
+    categoryService
+      .getAllCategories()
       .then((data) => {
-        usersDispatch(
-          new UserAction(userActions.USER_SUCCESS_USERS, data.users!)
-        );
+       dispatch(getAllCategories(data));
       })
       .catch((error) => {
-        usersDispatch(new UserAction(userActions.USER_FAILURE, error));
+        dispatch(categoryError(error.message));
       });
   }, []);
 
   useEffect(() => {
     productService.getProductById(id!).then((product) => {
-      productDispatch(
-        new ProductAction(productActions.PRODUCT_SUCCESS_PRODUCT, product!)
-      );
-    });
+     dispatch(getProductById(product));
+    }).catch(error => dispatch(productError(error.message)));
   }, [id]);
 
   const productSubmitHandler = (productDto: ProductDto) => {
-    productDispatch(new ProductAction(productActions.PRODUCT_BEGIN, true));
     productService
       .editProduct(productDto)
       .then((product) => {
         console.log("new User : ", product);
 
-        productDispatch(
-          new ProductAction(productActions.PRODUCT_SUCCESS_PRODUCT, product!)
-        );
+       dispatch(updateProduct(product));
         navigate("/list-product");
       })
       .catch((error) => {
-        productDispatch(
-          new ProductAction(productActions.PRODUCT_FAILURE, error)
-        );
+        dispatch(productError(error.message))
       });
   };
 
@@ -74,8 +54,8 @@ export function ProductEditPage() {
 
   return (
     <ProductForm
-      initialValue={productState.product}
-      users={usersState.users!}
+      initialValue={product}
+      categories={categories}
       onBackToList={backToList}
       onProductHandler={productSubmitHandler}
     />

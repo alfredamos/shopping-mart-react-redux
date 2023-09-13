@@ -19,7 +19,6 @@ function AuthPage(): JSX.Element {
       .login(loginDto)
       .then((data) => {
         console.log({ data });
-        localStorage.setItem("authApiRes", JSON.stringify(data))
         dispatch(authUserSuccess(data));
         navigate("/products");
       })
